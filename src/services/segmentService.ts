@@ -4,6 +4,7 @@
  */
 
 import * as nodejieba from 'nodejieba';
+import * as path from 'path';
 import { WordSegment } from '../types';
 
 /**
@@ -27,16 +28,33 @@ export class SegmentService {
 
   /**
    * 初始化分词引擎
-   * 确保NodeJieba正确加载
+   * 确保NodeJieba正确加载，并加载自定义词典
    */
   private initialize(): void {
     if (!this.initialized) {
       try {
-        // NodeJieba初始化（通常在首次调用时自动完成）
-        nodejieba.load();
+        // 获取自定义词典路径
+        // 使用项目根目录来定位词典文件
+        const dictPath = path.join(process.cwd(), 'src', 'dict.utf8');
+        
+        // NodeJieba初始化并加载自定义词典
+        // nodejieba.load接受一个对象参数，包含各种词典路径
+        // userDict参数用于指定用户自定义词典
+        nodejieba.load({
+          userDict: dictPath
+        });
+        
+        console.log(`自定义词典已加载: ${dictPath}`);
         this.initialized = true;
       } catch (error) {
-        throw new Error(`分词引擎初始化失败: ${error}`);
+        console.warn(`自定义词典加载失败，使用默认词典: ${error}`);
+        // 如果自定义词典加载失败，使用默认配置
+        try {
+          nodejieba.load();
+          this.initialized = true;
+        } catch (fallbackError) {
+          throw new Error(`分词引擎初始化失败: ${fallbackError}`);
+        }
       }
     }
   }

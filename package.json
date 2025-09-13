@@ -1,6 +1,6 @@
 {
   "name": "srtseg",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SRT字幕分词工具 - 将SRT字幕文件从句子级别拆分为词语级别",
   "main": "dist/index.js",
   "bin": {
