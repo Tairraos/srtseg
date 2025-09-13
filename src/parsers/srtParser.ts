@@ -17,10 +17,10 @@ export async function parseSRTFile(filePath: string): Promise<SRTEntry[]> {
   try {
     // 检查文件是否存在
     await fs.access(filePath);
-    
+
     // 读取文件内容
     const content = await fs.readFile(filePath, 'utf-8');
-    
+
     // 解析SRT内容
     return parseSRTContent(content);
   } catch (error) {
@@ -38,18 +38,18 @@ export async function parseSRTFile(filePath: string): Promise<SRTEntry[]> {
  */
 export function parseSRTContent(content: string): SRTEntry[] {
   const entries: SRTEntry[] = [];
-  
+
   // 按空行分割字幕条目
   const blocks = content.trim().split(/\n\s*\n/);
-  
+
   for (const block of blocks) {
     const lines = block.trim().split('\n');
-    
+
     // 每个字幕条目至少需要3行：序号、时间、文本
     if (lines.length < 3) {
       continue;
     }
-    
+
     try {
       // 解析序号
       const index = parseInt(lines[0].trim(), 10);
@@ -57,30 +57,30 @@ export function parseSRTContent(content: string): SRTEntry[] {
         console.warn(`跳过无效的字幕序号: ${lines[0]}`);
         continue;
       }
-      
+
       // 解析时间行
       const timeLine = lines[1].trim();
       const timeMatch = timeLine.match(/^([\d:,]+)\s*-->\s*([\d:,]+)$/);
-      
+
       if (!timeMatch) {
         console.warn(`跳过无效的时间格式: ${timeLine}`);
         continue;
       }
-      
+
       const startTime = timeMatch[1].trim();
       const endTime = timeMatch[2].trim();
-      
+
       // 解析文本内容（可能有多行）
       const text = lines.slice(2).join('\n').trim();
-      
+
       if (!text) {
         console.warn(`跳过空文本的字幕条目: ${index}`);
         continue;
       }
-      
+
       // 计算持续时间
       const duration = calculateDuration(startTime, endTime);
-      
+
       entries.push({
         index,
         startTime,
@@ -93,7 +93,7 @@ export function parseSRTContent(content: string): SRTEntry[] {
       continue;
     }
   }
-  
+
   return entries;
 }
 
@@ -104,7 +104,7 @@ export function parseSRTContent(content: string): SRTEntry[] {
  */
 export function generateSRTContent(entries: SRTEntry[]): string {
   const blocks: string[] = [];
-  
+
   for (const entry of entries) {
     // 格式化每个字幕条目
     const block = [
@@ -112,10 +112,10 @@ export function generateSRTContent(entries: SRTEntry[]): string {
       `${entry.startTime} --> ${entry.endTime}`,
       entry.text,
     ].join('\n');
-    
+
     blocks.push(block);
   }
-  
+
   // 用双换行符连接所有条目
   return blocks.join('\n\n') + '\n';
 }
@@ -133,10 +133,10 @@ export async function writeSRTFile(
     // 确保输出目录存在
     const outputDir = path.dirname(outputPath);
     await fs.mkdir(outputDir, { recursive: true });
-    
+
     // 生成SRT内容
     const content = generateSRTContent(entries);
-    
+
     // 写入文件
     await fs.writeFile(outputPath, content, 'utf-8');
   } catch (error) {

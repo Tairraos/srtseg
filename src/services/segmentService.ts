@@ -36,14 +36,14 @@ export class SegmentService {
         // 获取自定义词典路径
         // 使用模块相对路径来定位词典文件，确保在npm包中能正确找到
         const dictPath = path.join(__dirname, '..', 'dict.utf8');
-        
+
         // NodeJieba初始化并加载自定义词典
         // nodejieba.load接受一个对象参数，包含各种词典路径
         // userDict参数用于指定用户自定义词典
         nodejieba.load({
-          userDict: dictPath
+          userDict: dictPath,
         });
-        
+
         console.log(`自定义词典已加载: ${dictPath}`);
         this.initialized = true;
       } catch (error) {
@@ -66,38 +66,38 @@ export class SegmentService {
    */
   public segmentText(text: string): WordSegment[] {
     this.initialize();
-    
+
     if (!text || text.trim().length === 0) {
       return [];
     }
-    
+
     try {
       // 清理文本：移除多余的空白字符
       const cleanText = text.trim().replace(/\s+/g, ' ');
-      
+
       // 使用NodeJieba进行分词
       const words = nodejieba.cut(cleanText);
-      
+
       // 转换为WordSegment格式
       const segments: WordSegment[] = [];
       let position = 0;
-      
+
       for (const word of words) {
         // 跳过空字符串和纯空白字符
         if (word.trim().length === 0) {
           position += word.length;
           continue;
         }
-        
+
         segments.push({
           word: word.trim(),
           length: this.getCharacterCount(word.trim()),
           position,
         });
-        
+
         position += word.length;
       }
-      
+
       return segments;
     } catch (error) {
       throw new Error(`文本分词失败: ${error}`);
@@ -138,7 +138,7 @@ export class SegmentService {
     const totalWords = segments.length;
     const totalCharacters = segments.reduce((sum, seg) => sum + seg.length, 0);
     const averageWordLength = totalWords > 0 ? totalCharacters / totalWords : 0;
-    
+
     return {
       totalWords,
       totalCharacters,
@@ -160,11 +160,11 @@ export class SegmentService {
     try {
       // 重新组合分词结果
       const reconstructed = segments.map(seg => seg.word).join('');
-      
+
       // 移除空白字符后比较
       const cleanOriginal = originalText.replace(/\s+/g, '');
       const cleanReconstructed = reconstructed.replace(/\s+/g, '');
-      
+
       return cleanOriginal === cleanReconstructed;
     } catch {
       return false;

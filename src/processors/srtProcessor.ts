@@ -45,50 +45,45 @@ export class SRTProcessor {
     message: string;
   }> {
     const startTime = Date.now();
-    
+
     try {
       this.logVerbose('开始处理SRT文件...');
-      
+
       // 1. 解析输入文件
       this.logVerbose(`读取输入文件: ${this.config.inputFile}`);
       const originalEntries = await parseSRTFile(this.config.inputFile);
-      
+
       if (originalEntries.length === 0) {
         throw new Error('输入文件中没有找到有效的字幕条目');
       }
-      
+
       this.logVerbose(`解析到 ${originalEntries.length} 个字幕条目`);
-      
+
       // 2. 批量分词处理
       this.logVerbose('开始分词处理...');
       const texts = originalEntries.map(entry => entry.text);
       const segmentsList = batchSegment(texts);
-      
+
       // 统计分词结果
       const totalWords = segmentsList.reduce(
         (sum, segments) => sum + segments.length,
         0
       );
-      
+
       this.logVerbose(`分词完成，共生成 ${totalWords} 个词语`);
-      
+
       // 3. 时间分配
       this.logVerbose('开始时间分配...');
-      const wordEntries = batchAllocateTime(
-        originalEntries,
-        segmentsList,
-        {
-          minWordDuration: this.config.minWordDuration,
-          maxWordDuration: this.config.maxWordDuration,
-        }
-      );
-      
+      const wordEntries = batchAllocateTime(originalEntries, segmentsList, {
+        minWordDuration: this.config.minWordDuration,
+        maxWordDuration: this.config.maxWordDuration,
+      });
+
       // 4. 优化时间分配
       this.logVerbose('优化时间分配...');
-      const optimizedEntries = this.timeAllocationService.optimizeTimeAllocation(
-        wordEntries
-      );
-      
+      const optimizedEntries =
+        this.timeAllocationService.optimizeTimeAllocation(wordEntries);
+
       // 5. 转换为SRT格式
       const srtEntries: SRTEntry[] = optimizedEntries.map(entry => ({
         index: entry.index,
@@ -97,16 +92,16 @@ export class SRTProcessor {
         text: entry.word,
         duration: entry.duration,
       }));
-      
+
       // 6. 写入输出文件
       this.logVerbose(`写入输出文件: ${this.config.outputFile}`);
       await writeSRTFile(srtEntries, this.config.outputFile);
-      
+
       const processingTime = Date.now() - startTime;
       const message = `处理完成！原始条目: ${originalEntries.length}，生成词语: ${totalWords}，耗时: ${processingTime}ms`;
-      
+
       this.logVerbose(message);
-      
+
       return {
         success: true,
         inputFile: this.config.inputFile,
@@ -120,7 +115,7 @@ export class SRTProcessor {
     } catch (error) {
       const processingTime = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : '未知错误';
-      
+
       return {
         success: false,
         inputFile: this.config.inputFile,
@@ -143,18 +138,16 @@ export class SRTProcessor {
     try {
       // 分词处理
       const segments = segmentText(entry.text);
-      
+
       // 时间分配
       const wordEntries = allocateTime(entry, segments, {
         minWordDuration: this.config.minWordDuration,
         maxWordDuration: this.config.maxWordDuration,
       });
-      
+
       return wordEntries;
     } catch (error) {
-      throw new Error(
-        `处理字幕条目失败 (索引: ${entry.index}): ${error}`
-      );
+      throw new Error(`处理字幕条目失败 (索引: ${entry.index}): ${error}`);
     }
   }
 
@@ -169,14 +162,14 @@ export class SRTProcessor {
     try {
       // 检查输入文件是否存在
       const entries = await parseSRTFile(this.config.inputFile);
-      
+
       if (entries.length === 0) {
         return {
           valid: false,
           message: '输入文件中没有找到有效的字幕条目',
         };
       }
-      
+
       return {
         valid: true,
         message: `输入文件有效，包含 ${entries.length} 个字幕条目`,
@@ -227,11 +220,12 @@ export class SRTProcessor {
         (sum, entry) => sum + entry.text.length,
         0
       );
-      const averageEntryLength = totalEntries > 0 ? totalCharacters / totalEntries : 0;
-      
+      const averageEntryLength =
+        totalEntries > 0 ? totalCharacters / totalEntries : 0;
+
       // 粗略估算词语数量（中文平均每2-3个字符一个词）
       const estimatedWords = Math.round(totalCharacters / 2.5);
-      
+
       return {
         totalEntries,
         totalCharacters,
