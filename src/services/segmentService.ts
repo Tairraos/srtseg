@@ -34,8 +34,8 @@ export class SegmentService {
     if (!this.initialized) {
       try {
         // 获取自定义词典路径
-        // 使用项目根目录来定位词典文件
-        const dictPath = path.join(process.cwd(), 'src', 'dict.utf8');
+        // 使用模块相对路径来定位词典文件，确保在npm包中能正确找到
+        const dictPath = path.join(__dirname, '..', 'dict.utf8');
         
         // NodeJieba初始化并加载自定义词典
         // nodejieba.load接受一个对象参数，包含各种词典路径

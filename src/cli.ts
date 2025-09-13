@@ -38,15 +38,14 @@ class CLIApp {
 
     // 主命令
     this.program
-      .argument('<input>', '输入的SRT文件路径')
-      .argument('[output]', '输出的SRT文件路径（可选）')
-      .option('-o, --output <file>', '指定输出文件路径')
+      .option('-i, --input <file>', '输入的SRT文件路径')
+      .option('-o, --output <file>', '输出的SRT文件路径')
       .option('--min-duration <ms>', '最小词语显示时间（毫秒）', '200')
       .option('--max-duration <ms>', '最大词语显示时间（毫秒）', '3000')
       .option('--verbose', '显示详细处理信息', false)
       .option('--stats', '显示文件统计信息', false)
-      .action(async (input: string, output: string | undefined, options: any) => {
-        await this.handleMainCommand(input, output, options);
+      .action(async (options: any) => {
+        await this.handleMainCommand(options);
       });
 
     // 验证命令
@@ -70,18 +69,19 @@ class CLIApp {
 
   /**
    * 处理主命令
-   * @param input 输入文件路径
-   * @param output 输出文件路径
    * @param options 命令行选项
    */
   private async handleMainCommand(
-    input: string,
-    output: string | undefined,
     options: any
   ): Promise<void> {
     try {
+      // 检查必需的输入文件参数
+      if (!options.input) {
+        throw new Error('请使用 -i 或 --input 指定输入文件路径');
+      }
+      
       // 解析命令行选项
-      const cliOptions = this.parseOptions(input, output, options);
+      const cliOptions = this.parseOptions(options);
       
       // 验证输入文件
       await this.validateInputFile(cliOptions.input);
@@ -163,19 +163,15 @@ class CLIApp {
 
   /**
    * 解析命令行选项
-   * @param input 输入文件
-   * @param output 输出文件
    * @param options 选项
    * @returns 解析后的选项
    */
   private parseOptions(
-    input: string,
-    output: string | undefined,
     options: any
   ): CLIOptions {
     return {
-      input: path.resolve(input),
-      output: output ? path.resolve(output) : options.output ? path.resolve(options.output) : undefined,
+      input: path.resolve(options.input),
+      output: options.output ? path.resolve(options.output) : undefined,
       verbose: options.verbose,
     };
   }

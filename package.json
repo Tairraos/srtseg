@@ -1,13 +1,13 @@
 {
   "name": "srtseg",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "SRT字幕分词工具 - 将SRT字幕文件从句子级别拆分为词语级别",
   "main": "dist/index.js",
   "bin": {
     "srtseg": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/dict.utf8 dist/dict.utf8",
     "dev": "ts-node src/cli.ts",
     "start": "node dist/cli.js",
     "test": "jest",
@@ -62,6 +62,7 @@
   },
   "files": [
     "dist",
+    "src/dict.utf8",
     "README.md",
     "LICENSE"
   ]
