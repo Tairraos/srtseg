@@ -1,0 +1,4 @@
+- 每次任务都要添加typescript检查和eslint检查，并修复发现的所有问题
+- 每次任务都要进行package.json的版本升级
+- 每次任务都要进行git提交，填写足够清晰的comment，并完成远程push
+- 每次任务都要进行npm publish
